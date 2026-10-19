@@ -1,0 +1,111 @@
+classDiagram
+    direction TB
+
+    class Player {
+        -int id
+        -String name
+        -int position
+        +Player(int id, String name)
+        +int getId()
+        +String getName()
+        +int getPosition()
+        +void setPosition(int position)
+        +void move(int steps)
+    }
+
+    class Snake {
+        -int head
+        -int tail
+        +Snake(int head, int tail)
+        +int getHead()
+        +int getTail()
+    }
+
+    class Ladder {
+        -int bottom
+        -int top
+        +Ladder(int bottom, int top)
+        +int getBottom()
+        +int getTop()
+    }
+
+    class Board {
+        -int size
+        -List~Snake~ snakes
+        -List~Ladder~ ladders
+        +Board(int size)
+        +int getSize()
+        +void addSnake(Snake snake)
+        +void addLadder(Ladder ladder)
+        +int getFinalPosition(int position)
+        +boolean isValidPosition(int position)
+        +List~Snake~ getNearbySnakes(int position, int range)
+        +List~Ladder~ getNearbyLadders(int position, range)
+    }
+
+    class Game {
+        -List~Player~ players
+        -Board board
+        -int currentPlayerIndex
+        -GameState state
+        -Player winner
+        -Scanner scanner
+        +Game(List~Player~ players, Board board)
+        +void startGame()
+        +void playTurn()
+        +Dice chooseDice()
+        +void movePlayer(Player player, int steps)
+        +boolean checkWin(Player player)
+        +Player getCurrentPlayer()
+        +void nextPlayer()
+        +GameState getGameState()
+    }
+
+    class Dice {
+        <<interface>>
+        +int roll()
+    }
+
+    class NormalDice {
+        -Random random
+        +int roll()
+    }
+
+    class OddNumberDice {
+        -Random random
+        +int roll()
+    }
+
+    class EvenNumberDice {
+        -Random random
+        +int roll()
+    }
+
+    class GameState {
+        <<enumeration>>
+        WAITING
+        IN_PROGRESS
+        FINISHED
+    }
+
+    class Main {
+        +main(String[] args)
+    }
+
+    Game "1" o-- "2..4" Player : has players
+    Game "1" *-- "1" Board : uses
+    Game "1" --> "1" GameState : tracks
+    Game "1" ..> "1" Dice : chooses per turn
+
+    Board "1" *-- "0..*" Snake : contains
+    Board "1" *-- "0..*" Ladder : contains
+
+    Dice <|.. NormalDice : implements
+    Dice <|.. OddNumberDice : implements
+    Dice <|.. EvenNumberDice : implements
+
+    Main ..> Game : creates & starts
+    Main ..> Board : creates
+    Main ..> Player : creates
+    Main ..> Snake : adds
+    Main ..> Ladder : adds

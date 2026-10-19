@@ -1,0 +1,65 @@
+sequenceDiagram
+    autonumber
+    actor User as Player (You)
+    participant Main
+    participant Game
+    participant Player as Player obj
+    participant Board
+    participant Dice
+
+    Note over Main,Board: Setup phase
+    Main->>Main: Create Players p1, p2
+    Main->>Board: new Board(100)
+    Main->>Board: addSnake(25,10), addSnake(99,40)
+    Main->>Board: addLadder(5,20), addLadder(15,35)
+    Main->>Game: new Game(players, board)
+    Main->>Game: startGame()
+
+    Note over Game: state = IN_PROGRESS
+
+    loop while state == IN_PROGRESS
+        Game->>Player: getCurrentPlayer()
+        Game->>Player: getPosition()
+        Game-->>User: print turn and position
+
+        Note over Game,Board: Show nearby snakes/ladders within range 6
+        Game->>Board: getNearbySnakes(position, 6)
+        Board-->>Game: List of Snakes
+        Game->>Board: getNearbyLadders(position, 6)
+        Board-->>Game: List of Ladders
+        Game-->>User: print nearby objects
+
+        Note over Game,Dice: User chooses dice type
+        Game-->>User: Choose dice 1/2/3
+        User-->>Game: choice
+        Game->>Dice: new NormalDice/OddNumberDice/EvenNumberDice
+        Game->>Dice: roll()
+        Dice-->>Game: steps (1-6)
+        Game-->>User: You rolled: steps
+
+        Note over Game,Board: Move and apply snake/ladder
+        Game->>Game: newPosition = position + steps
+        alt newPosition > board.size
+            Game-->>User: Need exact roll. Stay put.
+        else newPosition valid
+            Game->>Board: getFinalPosition(newPosition)
+            alt snake at newPosition
+                Board-->>Game: snake.tail
+                Game-->>User: Oops! A snake!
+            else ladder at newPosition
+                Board-->>Game: ladder.top
+                Game-->>User: Great! Climbed a ladder!
+            else no snake or ladder
+                Board-->>Game: newPosition
+            end
+            Game->>Player: setPosition(finalPosition)
+            Game-->>User: Final position shown
+        end
+
+        alt player.getPosition() == board.size
+            Game->>Game: winner = player, state = FINISHED
+            Game-->>User: Winner: name
+        else
+            Game->>Game: nextPlayer() rotate index
+        end
+    end
